@@ -40,9 +40,9 @@ def get_db() -> MySQLdb.connections.Connection:
     """Creates a connector to a database.
     """
     db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
-    db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
+    db_name = os.getenv("PERSONAL_DATA_DB_NAME", "my_db")
     db_user = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
-    db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
+    db_pwd = os.getenv("PERSONAL_DATA_DB_PASSWORD", "root")
     connection = MySQLdb.connections.Connection(
         host=db_host,
         port=3306,
