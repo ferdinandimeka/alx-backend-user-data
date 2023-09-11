@@ -6,6 +6,7 @@ from db import DB
 from user import User
 from sqlalchemy.orm.exc import NoResultFound
 import uuid
+from typing import Union
 
 
 def _hash_password(password: str) -> bytes:
@@ -58,34 +59,52 @@ class Auth:
         except NoResultFound:
             return None
 
-    def get_user_from_session_id(self, session_id: str) -> str:
+    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
         """Get user from session ID
         """
+        user = None
+        if session_id is None:
+            return None
         try:
             user = self._db.find_user_by(session_id=session_id)
-            return user
         except NoResultFound:
             return None
+        return user
+
+    def destroy_session(self, user_id: int) -> None:
+        """Destroy session
+        """
+        if user_id is None:
+            return None
+        self._db.update_user(user_id, session_id=None)
 
     def get_reset_password_token(self, email: str) -> str:
         """Get reset password token
         """
+        user = None
         try:
             user = self._db.find_user_by(email=email)
-            token = _generate_uuid()
-            self._db.update_user(user.id, reset_token=token)
-            return token
         except NoResultFound:
-            raise ValueError
+            user = None
+        if user is None:
+            raise ValueError()
+        reset_token = _generate_uuid()
+        self._db.update_user(user.id, reset_token=reset_token)
+        return reset_token
 
     def update_password(self, reset_token: str, password: str) -> None:
         """Update password
         """
+        user = None
         try:
-            user = self._db.find_user_by_reset_token(reset_token)
-            hashed_password = _hash_password(password)
-            self._db.update_user(
-                user.id, hashed_password=hashed_password, reset_token=None
-                )
+            user = self._db.find_user_by(reset_token=reset_token)
         except NoResultFound:
-            raise ValueError
+            user = None
+        if user is None:
+            raise ValueError()
+        new_password_hash = _hash_password(password)
+        self._db.update_user(
+            user.id,
+            hashed_password=new_password_hash,
+            reset_token=None,
+        )
