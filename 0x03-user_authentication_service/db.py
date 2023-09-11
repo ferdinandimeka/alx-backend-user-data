@@ -65,10 +65,16 @@ class DB:
         """Update a user in the database
         """
         user = self.find_user_by(id=user_id)
+        if user is None:
+            return
+        update_source = {}
         for key, value in kwargs.items():
-            if hasattr(user, key):
-                setattr(user, key, value)
+            if hasattr(User, key):
+                update_source[getattr(User, key)] = value
             else:
                 raise ValueError()
+        self._session.query(User).filter(User.id == user_id).update(
+            update_source,
+            synchronize_session=False,
+        )
         self._session.commit()
-        return user
