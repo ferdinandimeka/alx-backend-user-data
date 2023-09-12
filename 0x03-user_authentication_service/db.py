@@ -7,9 +7,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import InvalidRequestError
-from user import User
 
-from user import Base
+from user import Base, User
 
 
 class DB:
@@ -51,7 +50,7 @@ class DB:
         fields, values = [], []
         for key, value in kwargs.items():
             if hasattr(User, key):
-                fields.append(getattr(User, key, None))
+                fields.append(getattr(User, key))
                 values.append(value)
             else:
                 raise InvalidRequestError()
@@ -61,7 +60,7 @@ class DB:
             raise NoResultFound()
         return res
 
-    def update_user(self, user_id: int, **kwargs) -> User:
+    def update_user(self, user_id: int, **kwargs) -> None:
         """Update a user in the database
         """
         user = self.find_user_by(id=user_id)
